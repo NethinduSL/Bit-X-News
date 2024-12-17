@@ -162,7 +162,7 @@ async function connectToWA() {
     setInterval(checkForUpdates, 20000); // Check for new news every 20 seconds
 }
 
-app.listen(3000, () => {
+app.listen(80, () => {
     console.log('Server is running on http://localhost:80');
 });
 
