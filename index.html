@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News WhatsApp Bot</title>
+    <!-- Styles -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: url('https://img.freepik.com/free-vector/gradient-breaking-news-background_23-2151173016.jpg?t=st=1734438589~exp=1734442189~hmac=adcd4408618de4dd5507ddaa58f966981a3c436c4624fb41e65e25725ca84734&w=1060') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            text-align: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        button img {
+            width: 18px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Bit x News Bot Deployed</h1>
+        <p>Scan qr for link <br> By Bit x</p>
+        <button onclick="openQR()">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/qr-code.png" alt="QR Code Icon">
+            Scan QR Code
+        </button>
+    </div>
+
+    <!-- Script -->
+    <script>
+        function openQR() {
+            window.open('/qr', '_blank');
+        }
+    </script>
+</body>
+</html>
