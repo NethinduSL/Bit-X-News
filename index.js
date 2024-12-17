@@ -15,7 +15,7 @@ let lastId = null; // Store the last known news ID
 let latestNews = null; // Store the latest fetched news
 
 const app = express();
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '')));
 
 app.get('/qr', (req, res) => {
     res.sendFile(qrCodeImagePath);
