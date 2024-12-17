@@ -25,7 +25,7 @@ async function fetchNewsData() {
 
 async function sendNews(sock, jid, news) {
     const { title, text, image, newsURL } = news;
-    const caption = `*${title}*\n\n${text}\n\nRead more: [News Link](${newsURL})\n\n_Powered by Bitx ❤️_`;
+    const caption = `*${title}*\n\n${text}\n\nRead more: [News Link](${newsURL})\n\n> 𝗕𝘆 𝗕𝗜𝗧 𝗫 😎`;
 
     await sock.sendMessage(jid, {
         image: { url: image },
