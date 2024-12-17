@@ -2,16 +2,28 @@ const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion,
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const P = require('pino'); // Pino logger for silent mode
-const qrcode = require('qrcode'); // Required to generate the QR code image
+const P = require('pino');
+const qrcode = require('qrcode');
+const express = require('express');
 
-// Directory path for saving credentials
 const authDirectory = path.join(__dirname, 'auth_info_baileys/');
-const qrCodeImagePath = path.join(__dirname, 'qr_code.png'); // Path where the QR code image will be saved
-const configPath = path.join(__dirname, 'config.json'); // Path for configuration file
+const qrCodeImagePath = path.join(__dirname, 'qr_code.png');
+const configPath = path.join(__dirname, 'config.json');
 
 let activeChats = new Set();
 let lastId = null;
+let latestNews = null; // Store the latest fetched news
+
+const app = express();
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/qr', (req, res) => {
+    res.sendFile(qrCodeImagePath);
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 async function fetchNewsData() {
     try {
@@ -42,7 +54,7 @@ async function loadConfig() {
     } catch (error) {
         console.error('Error loading config:', error);
     }
-    return { activeJids: [] }; // Default value
+    return { activeJids: [] };
 }
 
 async function saveConfig(config) {
@@ -56,23 +68,25 @@ async function saveConfig(config) {
 async function connectToWA() {
     console.log("Connecting to WhatsApp bot 🕦...");
 
-    // Get the credentials state from the multi-file auth state
-    const { state, saveCreds } = await useMultiFileAuthState(authDirectory);
-
-    if (state) {
-        console.log('Credentials found. Skipping QR code generation and connecting directly...');
+    const credsExist = fs.existsSync(path.join(authDirectory, 'creds.json'));
+    
+    if (credsExist) {
+        console.log('Credentials found. Connecting directly...');
+    } else {
+        console.log('No credentials found. Generating QR code...');
     }
 
-    // Fetch the latest Baileys version
+    const { state, saveCreds } = await useMultiFileAuthState(authDirectory);
+
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
-        logger: P({ level: 'silent' }), // Set logger to silent mode
-        printQRInTerminal: false, // Disable the built-in QR code print in terminal
-        browser: Browsers.macOS("Firefox"), // Define browser settings for the WhatsApp connection
-        syncFullHistory: false, // Synchronize full chat history
-        auth: state || {}, // Use the authentication state if available
-        version // Use the latest Baileys version
+        logger: P({ level: 'silent' }),
+        printQRInTerminal: false,
+        browser: Browsers.macOS("Firefox"),
+        syncFullHistory: false,
+        auth: state || {},
+        version
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -88,16 +102,12 @@ async function connectToWA() {
             }
         } else if (connection === 'open') {
             console.log('Connected to WhatsApp');
-        } else if (qr) {
-            // Only generate and show QR code if no credentials are found
-            if (!state) {
-                console.log('Generating QR code...');
-                try {
-                    await qrcode.toFile(qrCodeImagePath, qr); // Save QR code as an image file
-                    console.log(`QR code saved as image at ${qrCodeImagePath}`);
-                } catch (error) {
-                    console.error('Error generating QR code image:', error);
-                }
+        } else if (qr && !credsExist) {
+            try {
+                await qrcode.toFile(qrCodeImagePath, qr);
+                console.log(`QR code saved as image at ${qrCodeImagePath}`);
+            } catch (error) {
+                console.error('Error generating QR code image:', error);
             }
         }
     });
@@ -110,13 +120,15 @@ async function connectToWA() {
         const text = message.message.conversation || message.message.extendedTextMessage?.text;
 
         if (text === '.active') {
-            // Mark the chat as active
             const config = await loadConfig();
             if (!config.activeJids.includes(jid)) {
-                config.activeJids.push(jid); // Add group JID to active chats
+                config.activeJids.push(jid);
                 await saveConfig(config);
                 activeChats.add(jid);
                 await sock.sendMessage(jid, { text: 'News bot is now active for this chat.' });
+
+                // Send the latest news immediately after becoming active
+                await sendTestNews(sock);
             }
         }
     });
@@ -127,26 +139,28 @@ async function connectToWA() {
 
         if (newsData.id !== lastId) {
             lastId = newsData.id;
+            latestNews = newsData; // Update the latest news
             for (const chat of activeChats) {
                 await sendNews(sock, chat, newsData);
             }
         }
     }
 
-    setInterval(checkForUpdates, 20000); // Check every 20 seconds
-
-    // Send dynamic news from API as test news to active chats
-    async function sendTestNews() {
-        const newsData = await fetchNewsData(); // Fetch news dynamically
+    async function sendTestNews(sock) {
+        const newsData = await fetchNewsData();
         if (newsData) {
+            latestNews = newsData; // Store the fetched test news
             for (const chat of activeChats) {
                 await sendNews(sock, chat, newsData);
             }
         }
     }
 
-    // Send test news to active chats every minute (for testing purposes)
-    setInterval(sendTestNews, 60000); // Every 60 seconds (1 minute)
+    setInterval(checkForUpdates, 20000); // Check for new news every 20 seconds
 }
+
+app.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
+});
 
 connectToWA();
