@@ -4,7 +4,7 @@
   "description": "A WhatsApp bot using Baileys with QR code display on web page",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start index.js --name bitx",
+    "start": "pm2 start index.js --deep-monitoring --attach --name bitx",
     "stop": "pm2 stop bitx",
     "restart": "pm2 restart bitx"
   },
