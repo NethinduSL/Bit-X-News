@@ -1,10 +1,12 @@
 {
-  "name": "whatsapp-bot",
+  "name": "bitx",
   "version": "1.0.0",
   "description": "A WhatsApp bot using Baileys with QR code display on web page",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "pm2 start index.js --name bitx",
+    "stop": "pm2 stop bitx",
+    "restart": "pm2 restart bitx"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.5",
@@ -13,6 +15,7 @@
     "qrcode": "^1.5.0",
     "pino": "^7.0.5",
     "fs-extra": "^11.1.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "pm2": "^5.1.0"
   }
 }
